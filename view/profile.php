@@ -69,7 +69,7 @@
                 <br>
                 <h4 class="text-center">Reset Password</h4>
                 <hr width="80%">
-                <form class="form-group" action="reset_password.php" method="post" enctype="multipart/form-data">
+                <form class="form-group" action="../controller/reset_password.php" method="post" enctype="multipart/form-data">
                     <table class="table">
                         <tr>
                             <td><label for="current_password">Current Password</label></td>
@@ -95,9 +95,9 @@
 </script>
 
 
-<?php    
+<?php
     } else {
-        header("Location: ./message/general/page_not_found.php");
+        echo '<script>window.location.href = "../page/404.php";</script>';
     }
 
 ?>

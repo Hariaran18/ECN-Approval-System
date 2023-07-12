@@ -3,17 +3,17 @@
     include ("../config/navigationbar.php");
 
     // Check if the session has expired
-    if (isset($_SESSION['LAST_ACTIVITY']) && time() - $_SESSION['LAST_ACTIVITY'] > 1800) {
-        // Session expired, perform logout
-        unset($_SESSION["username"]);
-        unset($_SESSION["name"]);
-        unset($_SESSION["email"]);
-        unset($_SESSION["emp_id"]);
-        unset($_SESSION["department"]);
-        unset($_SESSION["sign"]);
-        unset($_SESSION["access"]);
-        echo '<script> location.replace("login.php"); </script>';
-    }
+    // if (isset($_SESSION['LAST_ACTIVITY']) && time() - $_SESSION['LAST_ACTIVITY'] > 1800) {
+    //     // Session expired, perform logout
+    //     unset($_SESSION["username"]);
+    //     unset($_SESSION["name"]);
+    //     unset($_SESSION["email"]);
+    //     unset($_SESSION["emp_id"]);
+    //     unset($_SESSION["department"]);
+    //     unset($_SESSION["sign"]);
+    //     unset($_SESSION["access"]);
+    //     echo '<script> location.replace("login.php"); </script>';
+    // }
 
     // Update the last activity timestamp
     $_SESSION['LAST_ACTIVITY'] = time();
@@ -21,11 +21,13 @@
     $fid = $_GET['form_id'];
 
     // Query to fetch group details and related form records
-    $sql = "SELECT f.form_id, f.ecn_no, f.type, f.model
+    $sql = "SELECT f.form_id, f.ecn_no, f.type, f.model, p.b_pic, p.a_pic, p.b_rev, p.a_rev, p.b_details, p.a_details, p.b_partno, p.a_partno
             FROM form_list f
             INNER JOIN form p ON f.form_id = p.form_id
             WHERE f.form_id = '$fid'";
     $result = $conn->query($sql);
+    $numRows = $result->num_rows; // Get the number of rows in the result set
+    $rowIndex = 0; // Initialize the row index
 
     $sql2 = "SELECT * FROM form_list
             WHERE form_id = '$fid'";
@@ -46,9 +48,9 @@ $conn->close();
 <html>
     <head>
         <title>E-ECN & IECN</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+        <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
         <style>
             header {
                 /* position: fixed; */
@@ -88,21 +90,41 @@ $conn->close();
                 background-color: black;
                 border: none;
             }
+            .img-size {
+                width: 100%;
+                height: 200px;
+                border: 1px solid gray;
+                text-align: center;
+            }
+            .image-box {
+                width: 100%;
+                height: 200px;
+                border: 1px solid gray;
+                text-align: center;
+            }
+            .sign-box {
+                width: 100%;
+                height: 80px;
+                border: 1px solid gray;
+                text-align: center;
+            }
 
             @media print {
                 @page {
-                    /* size: landscape;
-                    margin: 0; */
+                    size: A3 landscape;
+                    margin: 0;
                 }
-                html, body {
-                    /* width: 125%;
-                    height: 100%; */
-                    /* overflow: hidden; */
+                html, head, footer, body {
+                    width: 100%;
+                    height: 100%;
+                    /* overflow: hidden;
+                    left: 20px;
+                    right: 20px; */
                 }
                 body {
-                    /* transform: scale(0.5);
-                    transform-origin: 0 0;
-                    page-break-after: avoid; */
+                    transform: scale(1);
+                    /* transform-origin: 0 0; */
+                    /* page-break-after: avoid; */
                 }
             }
             
@@ -115,348 +137,99 @@ $conn->close();
             }
         </style>
 
-    <script>
-        $(document).ready(function() {
-            var addButton = $('#add_button');
-            var wrapper = $('#input_wrapper');
-            var fieldIndex = 4;
-
-            $(addButton).click(function(e) {
-                e.preventDefault();
-                var fieldHTML =
-                    '<hr>' +
-                    '<br>' +
-                    '<div class="row input-group">' +
-                        '<div class="col-md">' +
-                            '<div class="card">' +
-                                '<div class="card-header">' +
-                                    '<h5 class="card-title d-flex justify-content-center">BEFORE</h5>' +
-                                '</div>' +
-                                '<div class="card-body">' +
-                                    'Upload Picture:' +
-                                    '<input type="file" id="b_pic_' + fieldIndex + '" name="b_pic[]" class="form-control">' +
-                                    '<br>' +
-                                    'Details of Change:' +
-                                    '<input type="text" id="b_details_' + fieldIndex + '" name="b_details[]" class="form-control">' +
-                                    '<div class="row">' +
-                                        '<div class="col">' +
-                                            'PART NO:' +
-                                            '<input type="text" id="b_partno_' + fieldIndex + '" name="b_partno[]" class="form-control">' +
-                                        '</div>' +
-                                        '<div class="col">' +
-                                            'REVISION:' +
-                                            '<input type="text" id="b_rev_' + fieldIndex + '" name="b_rev[]" class="form-control">' +
-                                        '</div>' +
-                                    '</div>' +
-                                '</div>' +
-                            '</div>' +
-                            '<div class="card">' +
-                                '<div class="card-header">' +
-                                    '<h5 class="card-title d-flex justify-content-center">AFTER</h5>' +
-                                '</div>' +
-                                '<div class="card-body">' +
-                                    'Upload Picture:' +
-                                    '<input type="file" id="a_pic_' + fieldIndex + '" name="a_pic[]" class="form-control">' +
-                                    '<br>' +
-                                    'Details of Change:' +
-                                    '<input type="text" id="a_details_' + fieldIndex + '" name="a_details[]" class="form-control">' +
-                                    '<div class="row">' +
-                                        '<div class="col">' +
-                                            'PART NO:' +
-                                            '<input type="text" id="a_partno_' + fieldIndex + '" name="a_partno[]" class="form-control">' +
-                                        '</div>' +
-                                        '<div class="col">' +
-                                            'REVISION:' +
-                                            '<input type="text" id="a_rev_' + fieldIndex + '" name="a_rev[]" class="form-control">' +
-                                        '</div>' +
-                                    '</div>' +
-                                '</div>' +
-                            '</div>' +
-                        '</div>' +
-                        '<div class="col-md">' +
-                            '<div class="card">' +
-                                '<div class="card-header">' +
-                                    '<h5 class="card-title d-flex justify-content-center">BEFORE</h5>' +
-                                '</div>' +
-                                '<div class="card-body">' +
-                                    'Upload Picture:' +
-                                    '<input type="file" id="b_pic_' + (fieldIndex+1) + '" name="b_pic[]" class="form-control">' +
-                                    '<br>' +
-                                    'Details of Change:' +
-                                    '<input type="text" id="b_details_' + (fieldIndex+1) + '" name="b_details[]" class="form-control">' +
-                                    '<div class="row">' +
-                                        '<div class="col">' +
-                                            'PART NO:' +
-                                            '<input type="text" id="b_partno_' + (fieldIndex+1) + '" name="b_partno[]" class="form-control">' +
-                                        '</div>' +
-                                        '<div class="col">' +
-                                            'REVISION:' +
-                                            '<input type="text" id="b_rev_' + (fieldIndex+1) + '" name="b_rev[]" class="form-control">' +
-                                        '</div>' +
-                                    '</div>' +
-                                '</div>' +
-                            '</div>' +
-                            '<div class="card">' +
-                                '<div class="card-header">' +
-                                    '<h5 class="card-title d-flex justify-content-center">AFTER</h5>' +
-                                '</div>' +
-                                '<div class="card-body">' +
-                                    'Upload Picture:' +
-                                    '<input type="file" id="a_pic_' + (fieldIndex+1) + '" name="a_pic[]" class="form-control">' +
-                                    '<br>' +
-                                    'Details of Change:' +
-                                    '<input type="text" id="a_details_' + (fieldIndex+1) + '" name="a_details[]" class="form-control">' +
-                                    '<div class="row">' +
-                                        '<div class="col">' +
-                                            'PART NO:' +
-                                            '<input type="text" id="a_partno_' + (fieldIndex+1) + '" name="a_partno[]" class="form-control">' +
-                                        '</div>' +
-                                        '<div class="col">' +
-                                            'REVISION:' +
-                                            '<input type="text" id="a_rev_' + (fieldIndex+1) + '" name="a_rev[]" class="form-control">' +
-                                        '</div>' +
-                                    '</div>' +
-                                '</div>' +
-                            '</div>' +
-                        '</div>' +
-                        '<div class="col-md">' +
-                            '<div class="card">' +
-                                '<div class="card-header">' +
-                                    '<h5 class="card-title d-flex justify-content-center">BEFORE</h5>' +
-                                '</div>' +
-                                '<div class="card-body">' +
-                                    'Upload Picture:' +
-                                    '<input type="file" id="b_pic_' + (fieldIndex+2) + '" name="b_pic[]" class="form-control">' +
-                                    '<br>' +
-                                    'Details of Change:' +
-                                    '<input type="text" id="b_details_' + (fieldIndex+2) + '" name="b_details[]" class="form-control">' +
-                                    '<div class="row">' +
-                                        '<div class="col">' +
-                                            'PART NO:' +
-                                            '<input type="text" id="b_partno_' + (fieldIndex+2) + '" name="b_partno[]" class="form-control">' +
-                                        '</div>' +
-                                        '<div class="col">' +
-                                            'REVISION:' +
-                                            '<input type="text" id="b_rev_' + (fieldIndex+2) + '" name="b_rev[]" class="form-control">' +
-                                        '</div>' +
-                                    '</div>' +
-                                '</div>' +
-                            '</div>' +
-                            '<div class="card">' +
-                                '<div class="card-header">' +
-                                    '<h5 class="card-title d-flex justify-content-center">AFTER</h5>' +
-                                '</div>' +
-                                '<div class="card-body">' +
-                                    'Upload Picture:' +
-                                    '<input type="file" id="a_pic_' + (fieldIndex+2) + '" name="a_pic[]" class="form-control">' +
-                                    '<br>' +
-                                    'Details of Change:' +
-                                    '<input type="text" id="a_details_' + (fieldIndex+2) + '" name="a_details[]" class="form-control">' +
-                                    '<div class="row">' +
-                                        '<div class="col">' +
-                                            'PART NO:' +
-                                            '<input type="text" id="a_partno_' + (fieldIndex+2) + '" name="a_partno[]" class="form-control">' +
-                                        '</div>' +
-                                        '<div class="col">' +
-                                            'REVISION:' +
-                                            '<input type="text" id="a_rev_' + (fieldIndex+2) + '" name="a_rev[]" class="form-control">' +
-                                        '</div>' +
-                                    '</div>' +
-                                '</div>' +
-                            '</div>' +
-                        '</div>' +
-                    '</div>' +
-                    '<br>';
-                    fieldIndex = fieldIndex+3;
-                $(wrapper).append(fieldHTML);
-            });
-        });
-    </script>
-
     </head>
-    <!-- <form action="../controller/create_form_controller.php" method="post" enctype="multipart/form-data"> -->
-        <header>
-        <br><br>
-            <div class="container">
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <h2 class="card-title">ECN LAUNCHING</h2>
-                        <div class="row">
-                            <div class="col">
-                            <label for="ecr-no" class="form-label">Type</label>
-                            <input type="text" id="type" name="type" class="form-control" value="<?php echo $row2['type'];?>" readonly>
-                            </div>
-                            <div class="col">
-                            <label for="ecn-no" class="form-label">ECN No:</label>
-                            <input type="text" id="ecn_no" name="ecn_no" class="form-control" value="<?php echo $row2['ecn_no'];?>" readonly>
-                            </div>
-                            <div class="col">
-                            <label for="model" class="form-label">Model/Top Level:</label>
-                            <input type="text" id="model" name="model" class="form-control" value="<?php echo $row2['model'];?>" readonly>
-                            </div>
-                            <div class="col">
-                            <label for="running-no" class="form-label">Running number:</label>
-                            <input type="text" id="running_no" name="running_no" class="form-control" value="<?php echo $row2['form_id'];?>" readonly>
-                            </div>
+    
+    <header>
+    <br><br>
+        <div class="container">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h2 class="card-title">ECN LAUNCHING</h2>
+                    <div class="row">
+                        <div class="col">
+                        <label for="ecr-no" class="form-label">Type</label>
+                        <input type="text" id="type" name="type" class="form-control" value="<?php echo $row2['type'];?>" readonly>
+                        </div>
+                        <div class="col">
+                        <label for="ecn-no" class="form-label">ECN No:</label>
+                        <input type="text" id="ecn_no" name="ecn_no" class="form-control" value="<?php echo $row2['ecn_no'];?>" readonly>
+                        </div>
+                        <div class="col">
+                        <label for="model" class="form-label">Model/Top Level:</label>
+                        <input type="text" id="model" name="model" class="form-control" value="<?php echo $row2['model'];?>" readonly>
+                        </div>
+                        <div class="col">
+                        <label for="running-no" class="form-label">Running number:</label>
+                        <input type="text" id="running_no" name="running_no" class="form-control" value="<?php echo $row2['form_id'];?>" readonly>
                         </div>
                     </div>
                 </div>
             </div>
-        </header>
-        <body>
-            <br>           
-            <div class="container" id="container">
-                <div class="row" id="input_wrapper">
-                    <div class="row input-group">
-                        <div class="col-md">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="card-title d-flex justify-content-center">BEFORE</h5>
-                                </div>
-                                <div class="card-body">
-                                    Upload Picture:
-                                    <input type="file" id="b_pic_1" name="b_pic[]" class="form-control">
-                                    <br>
-                                    Details of Change:
-                                    <input type="text" id="b_details_1" name="b_details[]" class="form-control">
-                                    <div class="row">
-                                        <div class="col">
-                                            PART NO:
-                                            <input type="text" id="b_partno_1" name="b_partno[]" class="form-control">
-                                        </div>
-                                        <div class="col">
-                                            REVISION:
-                                            <input type="text" id="b_rev_1" name="b_rev[]" class="form-control">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="card-title d-flex justify-content-center">AFTER</h5>
-                                </div>
-                                <div class="card-body">
-                                    Upload Picture:
-                                    <input type="file" id="a_pic_1" name="a_pic[]" class="form-control">
-                                    <br>
-                                    Details of Change:
-                                    <input type="text" id="a_details_1" name="a_details[]" class="form-control">
-                                    <div class="row">
-                                        <div class="col">
-                                            PART NO:
-                                            <input type="text" id="a_partno_1" name="a_partno[]" class="form-control">
-                                        </div>
-                                        <div class="col">
-                                            REVISION:
-                                            <input type="text" id="a_rev_1" name="a_rev[]" class="form-control">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="card-title d-flex justify-content-center">BEFORE</h5>
-                                </div>
-                                <div class="card-body">
-                                    Upload Picture:
-                                    <input type="file" id="b_pic_2" name="b_pic[]" class="form-control">
-                                    <br>
-                                    Details of Change:
-                                    <input type="text" id="b_details_2" name="b_details[]" class="form-control">
-                                    <div class="row">
-                                        <div class="col">
-                                            PART NO:
-                                            <input type="text" id="b_partno_2" name="b_partno[]" class="form-control">
-                                        </div>
-                                        <div class="col">
-                                            REVISION:
-                                            <input type="text" id="b_rev_2" name="b_rev[]" class="form-control">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="card-title d-flex justify-content-center">AFTER</h5>
-                                </div>
-                                <div class="card-body">
-                                    Upload Picture:
-                                    <input type="file" id="a_pic_2" name="a_pic[]" class="form-control">
-                                    <br>
-                                    Details of Change:
-                                    <input type="text" id="a_details_2" name="a_details[]" class="form-control">
-                                    <div class="row">
-                                        <div class="col">
-                                            PART NO:
-                                            <input type="text" id="a_partno_2" name="a_partno[]" class="form-control">
-                                        </div>
-                                        <div class="col">
-                                            REVISION:
-                                            <input type="text" id="a_rev_2" name="a_rev[]" class="form-control">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="card-title d-flex justify-content-center">BEFORE</h5>
-                                </div>
-                                <div class="card-body">
-                                    Upload Picture:
-                                    <input type="file" id="b_pic_3" name="b_pic[]" class="form-control">
-                                    <br>
-                                    Details of Change:
-                                    <input type="text" id="b_details_3" name="b_details[]" class="form-control">
-                                    <div class="row">
-                                        <div class="col">
-                                            PART NO:
-                                            <input type="text" id="b_partno_3" name="b_partno[]" class="form-control">
-                                        </div>
-                                        <div class="col">
-                                            REVISION:
-                                            <input type="text" id="b_rev_3" name="b_rev[]" class="form-control">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="card-title d-flex justify-content-center">AFTER</h5>
-                                </div>
-                                <div class="card-body">
-                                    Upload Picture:
-                                    <input type="file" id="a_pic_3" name="a_pic[]" class="form-control">
-                                    <br>
-                                    Details of Change:
-                                    <input type="text" id="a_details_3" name="a_details[]" class="form-control">
-                                    <div class="row">
-                                        <div class="col">
-                                            PART NO:
-                                            <input type="text" id="a_partno_3" name="a_partno[]" class="form-control">
-                                        </div>
-                                        <div class="col">
-                                            REVISION:
-                                            <input type="text" id="a_rev_3" name="a_rev[]" class="form-control">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <br>
-                </div>
-                <!-- <br> -->
-                <!-- <div class="d-flex justify-content-between">
-                    <button type="button" id="add_button" class="btn btn-dark btn-lg">Add Row</button>
-                    <input type="submit" class="btn btn-primary btn-lg" value="Submit" />
-                </div> -->
-            </div> 
-        </body>
-    </form>
+        </div>
+    </header>
+
+    <body>
+        <br>
+        <div id="container">
+            <table style="border-collapse: collapse; border: 1px solid black;">
+                <?php
+                for ($i = 0; $i < $numRows; $i += 3) {
+                    // Start of the row
+                    echo '<tr>';
+                    for ($j = 1; $j <= 3; $j++) {
+                        $row = $result->fetch_assoc(); // Fetch the next row
+
+                        if (!$row) {
+                            break; // If there are no more rows, exit the loop
+                        }
+                        echo '<td style="border: 1px solid black; padding: 10px;">';
+                        echo '<table>';
+                        echo '<thead><tr><th colspan="2" style="text-align: center;">BEFORE</th></tr></thead>';
+                        echo '<tbody>';
+                        echo '<tr><td>Picture:</td></tr>';
+                        echo '<tr><td>';
+                        echo '<div class="image-box">';
+                        echo '<a href="../src/img/form/' . $row2['ecn_no'] . '/' . $row['b_pic'] . '" target="_blank">';
+                        echo '<img src="../src/img/form/' . $row2['ecn_no'] . '/' . $row['b_pic'] . '" class="img-size" style="display: ' . (empty($row['b_pic']) ? 'none' : 'block') . ';">';
+                        echo '</a>';
+                        echo '</div>';
+                        echo '</td></tr>';
+                        echo '<tr><td>Details of Change:</td></tr>';
+                        echo '<tr><td><input type="text" class="form-control" value="' . $row['b_details'] . '" readonly></td></tr>';
+                        echo '<tr><td>PART NO:</td><td>REVISION:</td></tr>';
+                        echo '<tr><td><input type="text" class="form-control" value="' . $row['b_partno'] . '" readonly></td><td><input type="text" class="form-control" value="' . $row['b_rev'] . '" readonly></td></tr>';
+                        echo '</tbody>';
+                        echo '</table>';
+
+                        echo '<table>';
+                        echo '<thead><tr><th colspan="2" style="text-align: center;">AFTER</th></tr></thead>';
+                        echo '<tbody>';
+                        echo '<tr><td>Picture:</td></tr>';
+                        echo '<tr><td>';
+                        echo '<div class="image-box">';
+                        echo '<a href="../src/img/form/' . $row2['ecn_no'] . '/' . $row['a_pic'] . '" target="_blank">';
+                        echo '<img src="../src/img/form/' . $row2['ecn_no'] . '/' . $row['a_pic'] . '" class="img-size" style="display: ' . (empty($row['a_pic']) ? 'none' : 'block') . ';">';
+                        echo '</a>';
+                        echo '</div>';
+                        echo '</td></tr>';
+                        echo '<tr><td>Details of Change:</td></tr>';
+                        echo '<tr><td><input type="text" class="form-control" value="' . $row['a_details'] . '" readonly></td></tr>';
+                        echo '<tr><td>PART NO:</td><td>REVISION:</td></tr>';
+                        echo '<tr><td><input type="text" class="form-control" value="' . $row['a_partno'] . '" readonly></td><td><input type="text" class="form-control" value="' . $row['a_rev'] . '" readonly></td></tr>';
+                        echo '</tbody>';
+                        echo '</table>';
+                        echo '</td>';
+                    }
+                    // End of the row
+                    echo '</tr>';
+                    $rowIndex += 3; // Increment the row index
+                }
+                ?>
+            </table>
+        </div>
+    </body>
+
+
 
     <br><br>
     <footer>
@@ -466,7 +239,9 @@ $conn->close();
                     <div class="card">
                         <div class="card-body">
                             <label class="font-weight-bold">SALES DEPT</label>
-                            <img src="../src/img/sign/img1.jpg" alt="Description of the image" class="img-fluid">
+                            <div class="sign-box">
+                                <img src="../src/img/sign/img1.jpg" class="img-fluid sign-box" style="display:<?php echo empty($sign1) ? 'none' : 'block'; ?>;">
+                            </div>
                             <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
                         </div>
                     </div>
@@ -475,7 +250,9 @@ $conn->close();
                     <div class="card">
                         <div class="card-body">
                             <label class="font-weight-bold">CUSTOMER SERVICE</label>
-                            <img src="../src/img/sign/img2.jpg" alt="Description of the image" class="img-fluid">
+                            <div class="sign-box">
+                                <img src="../src/img/sign/img1.jpg" class="img-fluid sign-box" style="display:<?php echo empty($sign1) ? 'none' : 'block'; ?>;">
+                            </div>
                             <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
                         </div>
                     </div>
@@ -484,7 +261,9 @@ $conn->close();
                     <div class="card">
                         <div class="card-body">
                             <label class="font-weight-bold">ENGINEERING DEPT</label>
-                            <img src="../src/img/sign/img3.jpg" alt="Description of the image" class="img-fluid">
+                            <div class="sign-box">
+                                <img src="../src/img/sign/img1.jpg" class="img-fluid sign-box" style="display:<?php echo empty($sign1) ? 'none' : 'block'; ?>;">
+                            </div>
                             <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
                         </div>
                     </div>
@@ -493,7 +272,9 @@ $conn->close();
                     <div class="card">
                         <div class="card-body">
                             <label class="font-weight-bold">PLANNING DEPT</label>
-                            <img src="../src/img/sign/img4.jpg" alt="Description of the image" class="img-fluid">
+                            <div class="sign-box">
+                                <img src="../src/img/sign/img1.jpg" class="img-fluid sign-box" style="display:<?php echo empty($sign1) ? 'none' : 'block'; ?>;">
+                            </div>
                             <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
                         </div>
                     </div>
@@ -502,7 +283,9 @@ $conn->close();
                     <div class="card">
                         <div class="card-body">
                             <label class="font-weight-bold">PURCHASE DEPT</label>
-                            <img src="../src/img/sign/img1.jpg" alt="Description of the image" class="img-fluid">
+                            <div class="sign-box">
+                                <img src="../src/img/sign/img1.jpg" class="img-fluid sign-box" style="display:<?php echo empty($sign1) ? 'none' : 'block'; ?>;">
+                            </div>
                             <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
                         </div>
                     </div>
@@ -511,7 +294,9 @@ $conn->close();
                     <div class="card">
                         <div class="card-body">
                             <label class="font-weight-bold">CAM DEPT</label>
-                            <img src="../src/img/sign/img2.jpg" alt="Description of the image" class="img-fluid">
+                            <div class="sign-box">
+                                <img src="../src/img/sign/img1.jpg" class="img-fluid sign-box" style="display:<?php echo empty($sign1) ? 'none' : 'block'; ?>;">
+                            </div>
                             <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
                         </div>
                     </div>
@@ -523,7 +308,9 @@ $conn->close();
                     <div class="card">
                         <div class="card-body">
                             <label class="font-weight-bold">BENDING DEPT</label>
-                            <input type="text" class="form-control" id="issued_name" name="issued_name" readonly></input>
+                            <div class="sign-box">
+                                <img src="../src/img/sign/img1.jpg" class="img-fluid sign-box" style="display:<?php echo empty($sign1) ? 'none' : 'block'; ?>;">
+                            </div>
                             <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
                         </div>
                     </div>
@@ -532,7 +319,9 @@ $conn->close();
                     <div class="card">
                         <div class="card-body">
                             <label class="font-weight-bold">ASSEMBLY DEPT</label>
-                            <input type="text" class="form-control" id="issued_name" name="issued_name" readonly></input>
+                            <div class="sign-box">
+                                <img src="../src/img/sign/img1.jpg" class="img-fluid sign-box" style="display:<?php echo empty($sign1) ? 'none' : 'block'; ?>;">
+                            </div>
                             <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
                         </div>
                     </div>
@@ -541,7 +330,9 @@ $conn->close();
                     <div class="card">
                         <div class="card-body">
                             <label class="font-weight-bold">CNC DEPT</label>
-                            <input type="text" class="form-control" id="issued_name" name="issued_name" readonly></input>
+                            <div class="sign-box">
+                                <img src="../src/img/sign/img1.jpg" class="img-fluid sign-box" style="display:<?php echo empty($sign1) ? 'none' : 'block'; ?>;">
+                            </div>
                             <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
                         </div>
                     </div>
@@ -550,7 +341,9 @@ $conn->close();
                     <div class="card">
                         <div class="card-body">
                             <label class="font-weight-bold">WELDING DEPT</label>
-                            <input type="text" class="form-control" id="issued_name" name="issued_name" readonly></input>
+                            <div class="sign-box">
+                                <img src="../src/img/sign/img1.jpg" class="img-fluid sign-box" style="display:<?php echo empty($sign1) ? 'none' : 'block'; ?>;">
+                            </div>
                             <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
                         </div>
                     </div>
@@ -559,7 +352,9 @@ $conn->close();
                     <div class="card">
                         <div class="card-body">
                             <label class="font-weight-bold">FINISHING DEPT</label>
-                            <input type="text" class="form-control" id="issued_name" name="issued_name" readonly></input>
+                            <div class="sign-box">
+                                <img src="../src/img/sign/img1.jpg" class="img-fluid sign-box" style="display:<?php echo empty($sign1) ? 'none' : 'block'; ?>;">
+                            </div>
                             <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
                         </div>
                     </div>
@@ -568,7 +363,9 @@ $conn->close();
                     <div class="card">
                         <div class="card-body">
                             <label class="font-weight-bold">QA DEPT</label>
-                            <input type="text" class="form-control" id="issued_name" name="issued_name" readonly></input>
+                            <div class="sign-box">
+                                <img src="../src/img/sign/img1.jpg" class="img-fluid sign-box" style="display:<?php echo empty($sign1) ? 'none' : 'block'; ?>;">
+                            </div>
                             <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
                         </div>
                     </div>

@@ -2,11 +2,11 @@
     include ("../config/dbconnection.php");
     include ("../config/navigationbar.php");
 
-    // if($_SESSION["username"]) {
+    if($_SESSION["username"]) {
 
-    $query = "SELECT form_id, ecn_no, type, model FROM form_list ORDER BY form_id DESC";    
+        $query = "SELECT form_id, ecn_no, type, model FROM form_list WHERE status <> 10 ORDER BY form_id DESC";    
 
-    if ($result = $conn->query($query)) {
+        if ($result = $conn->query($query)) {
 ?>
 
 <html>
@@ -29,8 +29,8 @@
     <body>
         <div class="container">
             <br>
-            <h1 class="text-center">E-ECN & IECN SYSTEM</h1>
-            <h4 class="text-center">Form List</h4>
+            <h1 class="text-center">APPLICATION LIST</h1>
+            <h4 class="text-center"><b>(PENDING)</b></h4>
             <hr width="80%">
             <div class="col-md-12">
                 <div class="card">
@@ -60,9 +60,9 @@
                                     <td><?php echo ($row["ecn_no"]); ?></td>
                                     <td><?php echo ($row["type"]); ?></td>
                                     <td><?php echo ($row["model"]); ?></td>
-                                    <td>New</td>
+                                    <td>Pending</td>
                                     <td>
-                                        <a href="form_view.php?form_id=<?php echo $row['form_id'] ?>" class="btn btn-dark btn-sm">View</a>
+                                        <a href="form_view2.php?form_id=<?php echo $row['form_id'] ?>" class="btn btn-dark btn-sm">View</a>
                                     </td>
                                 </tr>
                                 <?php
@@ -100,15 +100,15 @@
     </body>
 </html>
 
-<?php    
-        $result->free();
+<?php
+            $result->free();
         
-    } else {
-        echo "No result found";
-    }
+        } else {
+            echo "No result found";
+        }
 
-// } else {
-//     header("Location: ./message/general/page_not_found.php");
-// }
+    } else {
+        echo '<script>window.location.href = "../page/access_denied.php";</script>';
+    }
 
 ?>

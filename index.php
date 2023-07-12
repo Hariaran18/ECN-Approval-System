@@ -1,4 +1,3 @@
 <?php
-    header("Location: view/login.php");
-    exit();
+    echo '<script>window.location.href = "./view/login.php";</script>';
 ?>

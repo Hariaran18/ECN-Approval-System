@@ -4,9 +4,12 @@
     include ("../config/dbconnection.php");
     include ("../config/navigationbar.php");
 
-	$query = "SELECT * FROM user ORDER BY emp_id DESC";    
+	if($_SESSION["username"]) {
+	    if($_SESSION['access'] == "Admin") {
 
-	if ($result = $conn->query($query)) {
+			$query = "SELECT * FROM user ORDER BY emp_id DESC";    
+
+			if ($result = $conn->query($query)) {
 ?>
 
 <html>
@@ -17,140 +20,122 @@
 
 
 		<style>
-			body{
-				background:#FFFFFF;    
-			}
-			/* .main-box.no-header {
-				padding-top: 20px;
-			} */
-			.main-box {
-				background: #FFFFFF;
-				-webkit-box-shadow: 1px 1px 2px 0 #CCCCCC;
-				-moz-box-shadow: 1px 1px 2px 0 #CCCCCC;
-				-o-box-shadow: 1px 1px 2px 0 #CCCCCC;
-				-ms-box-shadow: 1px 1px 2px 0 #CCCCCC;
-				box-shadow: 1px 1px 2px 0 #CCCCCC;
-				margin-bottom: 16px;
-				-webikt-border-radius: 3px;
-				-moz-border-radius: 3px;
-				border-radius: 3px;
-			}
+            input[type="search"] {
+                width: 100%;
+                padding: 10px;
+                border: 2;
+                border-radius: 5px;
+                font-size: 14px;
+                outline: none;
+            }
 			.table a.table-link.danger {
 				color: #e74c3c;
-			}
-			/* .label {
-				border-radius: 3px;
-				font-size: 0.875em;
-				font-weight: 600;
-			} */
-			.user-list tbody td .user-subhead {
-				font-size: 0.875em;
-				font-style: italic;
-			}
-			.user-list tbody td .user-link {
-				display: block;
-				font-size: 1.25em;
-				padding-top: 3px;
-				margin-left: 60px;
 			}
 			a {
 				color: #3498db;
 				outline: none!important;
-			}
-			.user-list tbody td>img {
-				position: relative;
-				max-width: 50px;
-				float: left;
-				margin-right: 15px;
-			}
-
-			.table thead tr th {
-				text-transform: uppercase;
-				font-size: 0.875em;
-			}
-			.table thead tr th {
-				border-bottom: 2px solid #e7ebee;
-			}
-			.table tbody tr td:first-child {
-				font-size: 1.125em;
-				font-weight: 300;
-			}
-			.table tbody tr td {
-				font-size: 0.875em;
-				vertical-align: middle;
-				border-top: 1px solid #e7ebee;
-				padding: 12px 8px;
 			}
 			a:hover{
 			text-decoration:none;
 			}
 		</style>
 	</head>
-
-	<hr>
-	<div class="container bootstrap snippets bootdey">
-		<div class="row">
-			<div class="col-lg-12">
-				<div class="main-box no-header clearfix">
-					<div class="main-box-body clearfix">
-						<div class="table-responsive">
-							<table class="table user-list">
-								<thead>
-									<tr>
-										<th>Employee ID</th>
-										<th>Username</th>
-										<th>Name</th>
-										<th>Email</th>
-										<th>Department</th>
-										<th>Actions</th>
-									</tr>
-								</thead>
-								<tbody>
-									<?php
-										while ($row = $result->fetch_assoc()) {
-									?>
-										<tr>
-											<td><?php echo($row["emp_id"]);?></td>
-											<td><?php echo($row["username"]);?></td>
-											<td><?php echo($row["name"]);?></td>
-											<td><?php echo($row["email"]);?></td>
-											<td><?php echo($row["department"]);?></td>
-											<td style="width: 20%;">
-												<a href="edit_user.php?emp_id=<?php echo $row['emp_id'] ?>" class="table-link  text-info">
-													<span class="fa-stack">
-														<i class="fa fa-square fa-stack-2x"></i>
-														<i class="fa fa-pencil fa-stack-1x fa-inverse"></i>
-													</span>
-												</a>
-												<a href="../controller/delete_user.php?emp_id=<?php echo $row['emp_id'] ?>" class="table-link danger">
-													<span class="fa-stack">
-														<i class="fa fa-square fa-stack-2x"></i>
-														<i class="fa fa-trash-o fa-stack-1x fa-inverse"></i>
-													</span>
-												</a>
-											</td>
-										</tr>
-									<?php
-										}
-									?>
-								</tbody>
-							</table>
+	<body>
+		<div class="container"></div>
+			<br>
+			<h1 class="text-center">EDIT USER</h1>
+			<hr width="80%">
+			<div class="col-md-12">
+				<div class="card">
+					<div class="card-header pb-0">
+						<div class="card-actions float-right search-container">
+							<input class="form-outline" id="searchInput" type="search" onkeyup="searchFunction()" placeholder="Search...">
 						</div>
+					</div>
+					<div class="card-body">
+						<table class="table user-list" id="table">
+							<thead>
+								<tr>
+									<th>Employee ID</th>
+									<th>Username</th>
+									<th>Name</th>
+									<th>Email</th>
+									<th>Department</th>
+									<th>Actions</th>
+								</tr>
+							</thead>
+							<tbody>
+								<?php
+									while ($row = $result->fetch_assoc()) {
+								?>
+									<tr>
+										<td><?php echo($row["emp_id"]);?></td>
+										<td><?php echo($row["username"]);?></td>
+										<td><?php echo($row["name"]);?></td>
+										<td><?php echo($row["email"]);?></td>
+										<td><?php echo($row["department"]);?></td>
+										<td style="width: 20%;">
+											<a href="edit_user.php?emp_id=<?php echo $row['emp_id'] ?>" class="table-link  text-info">
+												<span class="fa-stack">
+													<i class="fa fa-square fa-stack-2x"></i>
+													<i class="fa fa-pencil fa-stack-1x fa-inverse"></i>
+												</span>
+											</a>
+											<a href="../controller/delete_user.php?emp_id=<?php echo $row['emp_id'] ?>" class="table-link danger">
+												<span class="fa-stack">
+													<i class="fa fa-square fa-stack-2x"></i>
+													<i class="fa fa-trash-o fa-stack-1x fa-inverse"></i>
+												</span>
+											</a>
+										</td>
+									</tr>
+								<?php
+									}
+								?>
+							</tbody>
+						</table>
 					</div>
 				</div>
 			</div>
 		</div>
-	</div>
+
+		<script>
+            function searchFunction() {
+                var input, filter, table, tr, td, i, txtValue;
+                input = document.getElementById("searchInput");
+                filter = input.value.toUpperCase();
+                table = document.getElementById("table");
+                tr = table.getElementsByTagName("tr");
+                for (i = 0; i < tr.length; i++) {
+                    td = tr[i].getElementsByTagName("td");
+                    for (j = 0; j < td.length; j++) {
+                        txtValue = td[j].textContent || td[j].innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            tr[i].style.display = "";
+                            break;
+                        } else {
+                            tr[i].style.display = "none";
+                        }
+                    }
+                }
+            }
+        </script>
+
+
+	</body>
 </html>
-<?php    
+<?php
 	$result->free();
 			
-	} else {
-		echo "No user found!";
-	}
+			} else {
+				echo "No user found!";
+			}
 
-	// } else {
-	// 	header("Location: ./message/general/access_denied.php");
-	// }
+		} else {
+			echo '<script>window.location.href = "../page/access_denied.php";</script>';
+		}
+	} else {
+		echo '<script>window.location.href = "../page/access_denied.php";</script>';
+	}
 
 ?>

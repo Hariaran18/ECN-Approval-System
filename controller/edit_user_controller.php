@@ -2,11 +2,12 @@
     include ("../config/dbconnection.php");
     session_start();
 
-    // if(($_SESSION['access'] == "admin") || ($_SESSION['access'] == "superuser")) {
+    if($_SESSION['access'] == "Admin") {
         $name = $_POST['name'];
         $email = $_POST['email'];
         $emp_id = $_POST['emp_id'];
         $department = $_POST['department'];
+        $access = $_POST['access'];
         
         
         // Image rename and storing
@@ -36,24 +37,20 @@
                 name = '$name',
                 email = '$email',
                 department = '$department',
+                access = '$access',
                 sign = '$newFileName'
                 WHERE `emp_id`= '$emp_id'";
             
         if (mysqli_query($conn, $sql)) {
-            
             echo "<script>alert('Successful!');</script>";
-?>
-            <meta http-equiv="refresh" content="0; url=../view/manage_user.php"/>
-<?php
+            echo '<script>window.location.href = "../view/manage_user.php";</script>';
         } else {
-            echo "Error: " . mysqli_error($conn);
-?>
-            <meta http-equiv="refresh" content="0; url=../view/manage_user.php"/>
-<?php
+            echo "<script>alert('Error: " . mysqli_error($conn) . "!');</script>" ;
+            echo '<script>window.location.href = "../view/manage_user.php";</script>';
         }
-    // } else {
-    //     include("./message/general/access_denied.php");
-    // }
+    } else {
+        echo '<script>window.location.href = "../page/access_denied.php";</script>';
+    }
 
     mysqli_close($conn); // Closing Connection with Server
 ?>

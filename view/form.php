@@ -2,8 +2,13 @@
     include ("../config/dbconnection.php");
     include ("../config/navigationbar.php");
 
-	// if($_SESSION["username"]) {
-	//     if(($_SESSION['access'] == "admin") || ($_SESSION['access'] == "superuser")) {
+	if($_SESSION["username"]) {
+	    // if(($_SESSION['access'] == "admin") || ($_SESSION['access'] == "superuser")) {
+
+        $dept = $_SESSION["department"];
+
+        $cus = mysqli_query($conn,"SELECT `name` FROM `customer` ORDER BY `name` ASC" );
+
 ?>
 
 <!DOCTYPE html>
@@ -82,15 +87,16 @@
     <script>
         $(document).ready(function() {
             var addButton = $('#add_button');
+            var removeButton = $('#remove_button');
             var wrapper = $('#input_wrapper');
             var fieldIndex = 4;
 
             $(addButton).click(function(e) {
                 e.preventDefault();
                 var fieldHTML =
-                    '<hr>' +
-                    '<br>' +
                     '<div class="row input-group">' +
+                        '<hr>' +
+                        '<br>' +
                         '<div class="col-md">' +
                             '<div class="card">' +
                                 '<div class="card-header">' +
@@ -234,6 +240,26 @@
                     fieldIndex = fieldIndex+3;
                 $(wrapper).append(fieldHTML);
             });
+
+            $(removeButton).click(function(e) {
+                e.preventDefault();
+                var rows = $(wrapper).children('.row');
+                if (rows.length > 1) {
+                    rows.last().remove(); // Remove the last added row
+                }
+            });
+
+        });
+    </script>
+
+    <script>
+        $(document).ready(function() {
+            // Attach the Datepicker to the input field
+            $('#implement_date').datepicker({
+                format: 'dd/mm/yyyy',
+                todayBtn: 'linked',
+                autoclose: true
+            });
         });
     </script>
 
@@ -247,20 +273,135 @@
                         <h2 class="card-title">ECN LAUNCHING</h2>
                         <div class="row">
                             <div class="col">
-                            <label for="ecr-no" class="form-label">Type</label>
-                            <input type="text" id="type" name="type" class="form-control">
+                                <label class="font-weight-bold">Created on</label>
+                                <input type="text" id="created_on" name="created_on" class="form-control" value="<?php echo date('d/m/Y'); ?>" readonly>
                             </div>
                             <div class="col">
-                            <label for="ecn-no" class="form-label">ECN No:</label>
-                            <input type="text" id="ecn_no" name="ecn_no" class="form-control">
+                                <label class="font-weight-bold">Created by</label>
+                                <input type="text" id="created_by" name="created_by" class="form-control" value="<?php echo $_SESSION['name']; ?>" readonly>
                             </div>
                             <div class="col">
-                            <label for="model" class="form-label">Model/Top Level:</label>
-                            <input type="text" id="model" name="model" class="form-control">
+                                <label class="font-weight-bold">Type <span style="color:red">*</span></label>
+                                <select class="form-select" name="type" id="type" required>
+                                    <option value="ECN">ECN</option>
+                                    <option value="IECN">IECN</option>
+                                </select>
                             </div>
                             <div class="col">
-                            <label for="running-no" class="form-label">Running number:</label>
-                            <input type="text" id="running_no" name="running_no" class="form-control">
+                                <label class="font-weight-bold">ECN No <span style="color:red">*</span></label>
+                                <input type="text" id="ecn_no" name="ecn_no" class="form-control" required>
+                            </div>
+                            <div class="col">
+                                <label class="font-weight-bold">Model/Top Level <span style="color:red">*</span></label>
+                                <input type="text" id="model" name="model" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <br>
+                                <label class="font-weight-bold">ECR No <span style="color:red">*</span></label>
+                                <input type="text" id="ecr_no" name="ecr_no" class="form-control" required>
+                            </div>
+                            <div class="col">
+                                <br>
+                                <label class="font-weight-bold">ETD</label>
+                                <input type="text" id="etd_no" name="etd_no" class="form-control">
+                            </div>
+                            <div class="col">
+                                <br>
+                                <label class="font-weight-bold">Job No</label>
+                                <input type="text" id="job_no" name="job_no" class="form-control">
+                            </div>
+                            <div class="col">
+                                <br>
+                                <label class="font-weight-bold">Implement Date</label>
+                                <input type="date" id="implement_date" name="implement_date" class="form-control">
+                            </div>
+                            <div class="col">
+                                <br>
+                                <label class="font-weight-bold">Status</label>
+                                <input type="text" id="status" name="status" class="form-control" value="New" readonly>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div>
+                                    <br>
+                                    <label class="font-weight-bold">Customer <span style="color:red">*</span></label>
+                                    <select class="form-select" name="customer" id="customer" required>
+                                        <option></option>
+                                            <?php while($row = mysqli_fetch_array($cus)):; ?>
+                                        <option value="<?php echo $row['0'];?>"><?php echo $row['0'];?></option>
+                                            <?php endwhile;?>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="font-weight-bold">FA Report</label>
+                                    <input type="file" class="form-control" name="fa_report" id="fa_report" disabled>
+                                </div>
+                            </div>
+                            <div class="col checkbox" style="float:left;">
+                                <br>
+                                <label class="font-weight-bold">PIC</label>
+                                <br>
+                                <div>
+                                    <input type="checkbox" class="pic_opt" value="10" id="npi1_chk" name="npi1_chk" <?php if ($dept == "NPI1"){echo "checked";} ?>>
+                                    <label>NPI 1</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" class="pic_opt" value="10" id="npi2_chk" name="npi2_chk" <?php if ($dept == "NPI2"){echo "checked";} ?>>
+                                    <label>NPI 2</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" class="pic_opt" value="1" id="planner_chk" name="planner_chk" checked disabled>
+                                    <label>Planner</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" class="pic_opt" value="1" id="sales_chk" name="sales_chk" checked disabled>
+                                    <label>Sales</label>
+                                </div>
+                            </div>
+                            <div class="col checkbox" style="float:left; margin-left:20px;">
+                                <br>
+                                <div>
+                                    <input type="checkbox" class="pic_opt" value="1" id="cs_chk" name="cs_chk" checked disabled>
+                                    <label>Customer Service</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" class="pic_opt" value="1" id="purchasing_chk" name="purchasing_chk">
+                                    <label>Purchasing</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" class="pic_opt" value="1" id="cam_chk" name="cam_chk">
+                                    <label>CAM</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" class="pic_opt" value="1" id="bending_chk" name="bending_chk">
+                                    <label>Bending</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" class="pic_opt" value="1" id="assembly_chk" name="assembly_chk">
+                                    <label>Assembly</label>
+                                </div>
+                            </div>
+                            <div class="col checkbox" style="float:left; margin-left:20px;">
+                                <br>
+                                <div>
+                                    <input type="checkbox" class="pic_opt" value="1" id="cnc_chk" name="cnc_chk">
+                                    <label>CNC</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" class="pic_opt" value="1" id="welding_chk" name="welding_chk">
+                                    <label>Welding</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" class="pic_opt" value="1" id="finishing_chk" name="finishing_chk">
+                                    <label>Finishing</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" class="pic_opt" value="1" id="qa_chk" name="qa_chk" checked disabled>
+                                    <label>QA</label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -415,130 +556,20 @@
                 </div>
                 <!-- <br> -->
                 <div class="d-flex justify-content-between">
-                    <button type="button" id="add_button" class="btn btn-dark btn-lg">Add Row</button>
-                    <input type="submit" class="btn btn-primary btn-lg" value="Submit" />
+                    <div>
+                        <button type="button" id="add_button" class="btn btn-dark btn-md">Add Row</button>
+                        <button type="button" id="remove_button" class="btn btn-danger btn-md">Remove Row</button>
+                    </div>
+                    <div>
+                        <input type="submit" class="btn btn-primary btn-md" value="Submit" />
+                    </div>
                 </div>
             </div> 
         </body>
     </form>
-
-    <br><br>
-    <!-- <footer>
-        <div class="container">
-            <div class="row">
-                <div class="col-md">
-                    <div class="card">
-                        <div class="card-body">
-                            <label class="font-weight-bold">SALES DEPT</label>
-                            <img src="../src/img/sign/img1.jpg" alt="Description of the image" class="img-fluid">
-                            <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md">
-                    <div class="card">
-                        <div class="card-body">
-                            <label class="font-weight-bold">CUSTOMER SERVICE</label>
-                            <img src="../src/img/sign/img2.jpg" alt="Description of the image" class="img-fluid">
-                            <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md">
-                    <div class="card">
-                        <div class="card-body">
-                            <label class="font-weight-bold">ENGINEERING DEPT</label>
-                            <img src="../src/img/sign/img3.jpg" alt="Description of the image" class="img-fluid">
-                            <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md">
-                    <div class="card">
-                        <div class="card-body">
-                            <label class="font-weight-bold">PLANNING DEPT</label>
-                            <img src="../src/img/sign/img4.jpg" alt="Description of the image" class="img-fluid">
-                            <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md">
-                    <div class="card">
-                        <div class="card-body">
-                            <label class="font-weight-bold">PURCHASE DEPT</label>
-                            <img src="../src/img/sign/img1.jpg" alt="Description of the image" class="img-fluid">
-                            <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md">
-                    <div class="card">
-                        <div class="card-body">
-                            <label class="font-weight-bold">CAM DEPT</label>
-                            <img src="../src/img/sign/img2.jpg" alt="Description of the image" class="img-fluid">
-                            <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md">
-                    <div class="card">
-                        <div class="card-body">
-                            <label class="font-weight-bold">BENDING DEPT</label>
-                            <input type="text" class="form-control" id="issued_name" name="issued_name" readonly></input>
-                            <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md">
-                    <div class="card">
-                        <div class="card-body">
-                            <label class="font-weight-bold">ASSEMBLY DEPT</label>
-                            <input type="text" class="form-control" id="issued_name" name="issued_name" readonly></input>
-                            <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md">
-                    <div class="card">
-                        <div class="card-body">
-                            <label class="font-weight-bold">CNC DEPT</label>
-                            <input type="text" class="form-control" id="issued_name" name="issued_name" readonly></input>
-                            <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md">
-                    <div class="card">
-                        <div class="card-body">
-                            <label class="font-weight-bold">WELDING DEPT</label>
-                            <input type="text" class="form-control" id="issued_name" name="issued_name" readonly></input>
-                            <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md">
-                    <div class="card">
-                        <div class="card-body">
-                            <label class="font-weight-bold">FINISHING DEPT</label>
-                            <input type="text" class="form-control" id="issued_name" name="issued_name" readonly></input>
-                            <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md">
-                    <div class="card">
-                        <div class="card-body">
-                            <label class="font-weight-bold">QA DEPT</label>
-                            <input type="text" class="form-control" id="issued_name" name="issued_name" readonly></input>
-                            <input type="date" class="form-control" id="issued_date" name="issued_date" readonly></input>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <br>
-    </footer> -->
+    <br>
 </html>
+
+<?php
+    }
+?>

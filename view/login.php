@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8">
       <title>E-ECN & IECN</title>
-      <link rel="stylesheet" href="./bootstrap/css/style2.css"> 
+      <link rel="stylesheet" href="../src/bootstrap/css/style2.css"> 
   </head>
 
   <body>
@@ -37,10 +37,11 @@
             $_SESSION["username"] = $qry_val['username'];
             $_SESSION["name"] = $qry_val['name'];
             $_SESSION["email"] = $qry_val['email'];
+            $_SESSION["access"] = $qry_val['access'];
             $_SESSION["department"] = $qry_val['department'];
             $_SESSION["sign"] = $qry_val['sign'];
 
-             header("location:manage_user.php");
+            echo '<script>window.location.href = "list_view.php";</script>';
           }
           else
           {
